@@ -8,6 +8,7 @@ Source101:      macros.python
 Source102:      macros.python-srpm
 Source104:      macros.python3
 Source105:      macros.pybytecompile
+Source106:      macros.python-wheel-sbom
 
 # Lua files
 Source201:      python.lua
@@ -33,6 +34,8 @@ Source402:      brp-python-hardlink
 # This one is from redhat-rpm-config < 190
 # It has no upstream yet
 Source403:      brp-fix-pyc-reproducibility
+# brp script to write "rpm" string into the .dist-info/INSTALLER file
+Source404:      brp-python-rpm-in-distinfo
 
 # macros and lua: MIT
 # import_all_modules.py: MIT
@@ -53,7 +56,7 @@ elseif posix.stat('macros.python-srpm') then
 end
 }
 Version:        %{__default_python3_version}
-Release:        3%{?dist}
+Release:        9%{?dist}
 
 BuildArch:      noarch
 
@@ -136,6 +139,7 @@ install -m 755 brp-* %{buildroot}%{_rpmconfigdir}/redhat/
 %global __brp_python_bytecompile %{add_buildroot __brp_python_bytecompile}
 %global __brp_python_hardlink %{add_buildroot __brp_python_hardlink}
 %global __brp_fix_pyc_reproducibility %{add_buildroot __brp_fix_pyc_reproducibility}
+%global __brp_python_rpm_in_distinfo %{add_buildroot __brp_python_rpm_in_distinfo}
 
 
 %check
@@ -146,6 +150,7 @@ grep -E '^#[^%%]*%%[^%%]' %{buildroot}%{rpmmacrodir}/macros.* && exit 1 || true
 %files
 %{rpmmacrodir}/macros.python
 %{rpmmacrodir}/macros.pybytecompile
+%{rpmmacrodir}/macros.python-wheel-sbom
 %{_rpmconfigdir}/redhat/import_all_modules.py
 %{_rpmconfigdir}/redhat/pathfix.py
 
@@ -156,6 +161,7 @@ grep -E '^#[^%%]*%%[^%%]' %{buildroot}%{rpmmacrodir}/macros.* && exit 1 || true
 %{_rpmconfigdir}/redhat/brp-python-bytecompile
 %{_rpmconfigdir}/redhat/brp-python-hardlink
 %{_rpmconfigdir}/redhat/brp-fix-pyc-reproducibility
+%{_rpmconfigdir}/redhat/brp-python-rpm-in-distinfo
 %{_rpmluadir}/fedora/srpm/python.lua
 
 %files -n python3-rpm-macros
@@ -163,6 +169,43 @@ grep -E '^#[^%%]*%%[^%%]' %{buildroot}%{rpmmacrodir}/macros.* && exit 1 || true
 
 
 %changelog
+* Thu Oct 16 2025 Miro Hrončok <mhroncok@redhat.com> - 3.14-9
+- %%python_extras_subpkg: Only %%ghost the egg-info/dist-info directory, not the content
+- That way, accidentally unpackaged files within are reported as errors
+
+* Tue Sep 09 2025 Miro Hrončok <mhroncok@redhat.com> - 3.14-8
+- %%python_extras_subpkg: Add -v option to specify the required version(-release)
+- This is useful when the extras are built from a different specfile (e.g. in EPEL for a RHEL base package)
+
+* Fri Aug 29 2025 Miro Hrončok <mhroncok@redhat.com> - 3.14-7
+- %%python_wheel_inject_sbom: Don't accidentally alter nested .dist-infos
+
+* Wed Aug 13 2025 Miro Hrončok <mhroncok@redhat.com> - 3.14-6
+- Introduce %%python_wheel_inject_sbom
+
+* Mon Aug 11 2025 Lumír Balhar <lbalhar@redhat.com> - 3.14-5
+- import_all_modules: Add error handling for import failures
+
+* Fri Jul 25 2025 Fedora Release Engineering <releng@fedoraproject.org>
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
+
+* Mon Jul 21 2025 Íñigo Huguet <ihuguet@riseup.net> - 3.14-3
+- pathfix.py: Don't fail on symbolic links
+
+* Sun Jun 29 2025 Miro Hrončok <mhroncok@redhat.com> - 3.14-2
+- Deprecate %%py3_build, %%py3_build_wheel, and %%py3_install
+- Deprecate %%py_build, %%py_build_wheel, and %%py_install
+- https://fedoraproject.org/wiki/Changes/DeprecateSetuppyMacros
+
+* Wed May 28 2025 Karolina Surma <ksurma@redhat.com> - 3.14-1
+- Update main Python to 3.14
+
+* Mon Feb 10 2025 Tomáš Hrnčiar <thrnciar@redhat.com> - 3.13-5
+- Add brp script to modify .dist-info/INSTALLER file
+
+* Sat Jan 18 2025 Fedora Release Engineering <releng@fedoraproject.org> - 3.13-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
+
 * Fri Jul 19 2024 Fedora Release Engineering <releng@fedoraproject.org> - 3.12-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
 
